@@ -1,0 +1,39 @@
+= Database Internals
+:toc:
+:toclevels: 4
+:toc-title: Table of Contents
+Alex Petrov <xxx@xxx.org> 
+:description: A Deep Dive into How Distributed Data Systems Work
+:sectanchors: 
+:url-repo: https://my-git-repo.com 
+
+The document body starts here.
+
+toc::[]
+
+== Part I. Storage Engines
+:name: document-title
+:reproducible:
+
+This is a basic AsciiDoc document by {author}.
+
+Many aspects of the syntax must occupy a whole line. That’s why we say AsciiDoc is a line-oriented language.
+
+This document contains two paragraphs.
+It also has a header that specifies the document title.
+
+block always starts on a new line, terminated at the end of a line, and are aligned to the left margin.
+
+[quote,attribution,citation title and information]
+Quote or excerpt text
+
+=== 1. Introduction and Overview
+
+==== DBMS Architecture
+
+==== Memory- Versus Disk-Based DBMS
+===== Durability in Memory-Based Stores
+
+=== 2. B-Tree Basics
+
+== Part II. Distributed Systems
